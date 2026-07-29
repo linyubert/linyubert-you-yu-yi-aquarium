@@ -1,83 +1,55 @@
-# vinext-starter
+# 游於藝｜學習成就水族館
 
-Full-stack starter on [vinext](https://github.com/cloudflare/vinext). Cloudflare D1 and Drizzle support included, but optional — turn them on when you actually need them.
+![游於藝主視覺](public/og-share.jpg)
 
-## Prerequisites
+> 每一次努力，都讓成長清晰可見。
+> 每位學生，都是水中獨一無二的風景；餵下一顆星，看見他們自在茁壯。
 
-- Node.js `>=22.13.0`
+**線上體驗：[datomusiclab.dpdns.org/linyubert-you-yu-yi-aquarium](https://datomusiclab.dpdns.org/linyubert-you-yu-yi-aquarium/)**
 
-## Quick Start
+## 這是什麼
+
+「游於藝」是一個把班級經營遊戲化的互動水族箱。老師匯入學生名冊後，每位學生會化身成一尾專屬的魚，優游在班級水族箱裡；每次「餵食」都會讓那尾魚長大一點、累積成長值，讓平常抽象的努力與進步變得看得見、玩得起來。
+
+## 主要功能
+
+- **多班級水族箱**：可自訂多個班級，各自擁有獨立情境（海藻森林、晨光珊瑚礁、月光深海）與班級標語
+- **匯入名冊**：支援上傳 CSV / TXT，或直接貼上名單，第一欄自動辨識為學生姓名
+- **餵食成長**：點一下魚就能餵食累積成長值，也可以「全班＋1」一次獎勵全班
+- **游藝英雄榜**：即時排行榜，依成長值排序，並顯示等級
+- **個人化體驗**：可調整魚群游速、開關音效、切換全螢幕觀賞水族箱
+- **資料保存在本機**：所有名冊與成長紀錄都存在瀏覽器 `localStorage`，不需要後端資料庫
+
+## 快速開始
 
 ```bash
 npm install
-npm run dev
-npm run build
+npm run dev      # 本機開發
+npm run build    # 驗證正式建置
 ```
 
-No `wrangler.jsonc` here.
+需要 Node.js `>=22.13.0`。
 
-## What's Inside
+## 技術架構
 
-- Site code lives in `app/`
-- `.openai/hosting.json` declares the optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates those bindings locally
-- `db/schema.ts` starts empty on purpose
-- `examples/d1/` has an optional D1 example
-- `drizzle.config.ts` handles local migration generation when you need it
+專案以 [vinext](https://github.com/cloudflare/vinext)（Next.js on Cloudflare）起手，介面使用 React 19 + Tailwind CSS 4 打造：
 
-## Workspace Auth Headers
+- 頁面邏輯在 `app/page.tsx`（純前端元件，無伺服器端資料依賴）
+- 版型與 SEO 中繼資料在 `app/layout.tsx`
+- 樣式集中於 `app/globals.css`
+- `db/`、`drizzle.config.ts`、`examples/d1/` 是可選的 Cloudflare D1 資料庫支援，目前專案未啟用
+- `app/chatgpt-auth.ts` 提供選用的 ChatGPT 登入串接，目前首頁未使用
 
-OpenAI workspace sites can read the current user's email from `oai-authenticated-user-email`.
+## 靜態站台部署
 
-SIWC-authenticated sites may also get `oai-authenticated-user-full-name`, but only when the user's SIWC profile has a non-empty `name` claim. It's percent-encoded UTF-8, with `oai-authenticated-user-full-name-encoding: percent-encoded-utf-8` alongside it.
+由於首頁完全是前端互動（狀態存在瀏覽器 `localStorage`），另外提供一份純靜態打包版本，方便部署到 GitHub Pages：
 
-Treat the full name as optional. Fall back to email:
-
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
+```bash
+npx vite build --config vite.config.pages.ts
 ```
 
-## Optional Dispatch-Owned ChatGPT Sign-In
+輸出會產生在 `docs/` 資料夾，GitHub Pages 已設定從該資料夾發布。
 
-`app/chatgpt-auth.ts` has the helpers ready to go:
+## 授權
 
-- `getChatGPTUser()` — optional signed-in UI
-- `requireChatGPTUser(returnTo)` — server-rendered pages that should redirect anonymous visitors through Sign in with ChatGPT
-- `chatGPTSignInPath(returnTo)` / `chatGPTSignOutPath(returnTo)` — for browser links or actions
-
-`returnTo` should be a same-origin relative path — the destination after sign-in/out. The helper validates and encodes it for you.
-
-Mark protected pages `export const dynamic = "force-dynamic"` since they depend on per-request identity headers.
-
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the OAuth cookies, and identity header injection — don't build app routes on those paths. Anything that skips the helper stays anonymous-compatible.
-
-SIWC proves identity, not workspace membership. If you need workspace-wide restrictions, use the Sites hosting platform's access policy controls, or add your own server-side membership/allowlist check.
-
-Use SIWC for account pages, per-user dashboards, saved records, and writes tied to the current ChatGPT user. Keep public content anonymous.
-
-## Commands
-
-- `npm run dev` — local dev
-- `npm run build` — verify the vinext build output
-- `npm test` — build + check the rendered loading skeleton
-- `npm run db:generate` — generate Drizzle migrations after schema changes
-
-## Learn More
-
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+專案內容僅供班級經營與教學使用。
