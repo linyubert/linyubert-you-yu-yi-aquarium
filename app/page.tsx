@@ -67,9 +67,9 @@ function studentSeed(student: Student) {
 }
 
 function Fish({ student, onFeed, isFed, speed }: { student: Student; onFeed: () => void; isFed: boolean; speed: number }) {
-  const scale = Math.min(1.82, 0.72 + student.feeds * 0.095);
+  const scale = Math.min(2.6, 0.72 + student.feeds * 0.095);
   const motionSeed = studentSeed(student);
-  const variant = motionSeed % 5;
+  const variant = motionSeed % 10;
   const startsFromRight = motionSeed % 2 === 1;
   const drift = (shift: number, range: number, offset: number) =>
     ((motionSeed >>> shift) % range) + offset;
